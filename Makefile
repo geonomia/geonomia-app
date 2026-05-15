@@ -177,7 +177,7 @@ data/metadata.json: get_download_metadata.py resources/metadata.json $(VENV_SENT
 
 dbmetadata: data/metadata.json
 
-all: dbmetadata
+all: db dbmetadata
 
 run: $(DATA_DIR)/geonomia-$(GBIF_DOWNLOAD_COUNTRYCODE).db data/metadata.json
 	$(DATASETTE) $(DATA_DIR)/geonomia-$(GBIF_DOWNLOAD_COUNTRYCODE).db --cors --setting sql_time_limit_ms 3500 --metadata data/metadata.json --plugins-dir plugins

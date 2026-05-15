@@ -1,0 +1,69 @@
+{
+  "databases": {
+    "geonomia": {
+      "tables": {
+        "reconcile_yr_rb_rn": {
+	        "plugins": {
+            "datasette-reconcile": {
+              "id_field": "gbifid",
+              "name_field": "reconciliation_backend_key",
+              "type_default": [
+                {
+                  "id": "collectingEvent",
+                  "name": "CollectingEvent"
+                }
+              ],
+              "max_limit": 5,
+              "service_name": "Collecting event reconciliation",
+              "view_url": "https://gbif.org/occurrence/{{id}}"
+            }
+        }
+      },
+        "reconcile_rb_day": {
+	        "plugins": {
+            "datasette-reconcile": {
+              "id_field": "cluster_stage1_id",
+              "name_field": "reconciliation_backend_key",
+              "type_default": [
+                {
+                  "id": "collectingTrip",
+                  "name": "CollectingTrip"
+                }
+              ],
+              "max_limit": 5,
+              "service_name": "Collecting trip reconciliation",
+              "view_url": "http://127.0.0.1:8001/geonomia-MY/cluster/{{id}}"
+            }
+        }
+      },
+      "cluster": {  
+          "columns":{
+			  "cluster_num_id": {
+				  "link": "/cluster/{value}"
+			  }
+			}
+		},
+        "occ": {
+          "columns":{
+			  "cluster_num_id": {
+				  "link": "/cluster/{value}"
+			  },
+			  "gbifID": {
+				  "link": "https://gbif.org/occurrence/{value}"
+			  }
+		  },  
+          "plugins": {
+            "datasette-cluster-map": {
+              "latitude_column": "decimalLatitude",
+              "longitude_column": "decimalLongitude",
+              "default_bounds": [
+                [0.77, 100.09],
+                [6.93, 119.18]
+              ]
+            }
+          }
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,11 @@
+/* 1. Target the Leaflet container */
+.leaflet-container {
+    /* If it doesn't have markers, hide the whole thing */
+    display: none !important;
+}
+
+/* 2. Only show the container if it actually contains markers */
+.leaflet-container:has(.leaflet-marker-icon) {
+    display: block !important;
+    height: 500px !important; /* Ensure it has height when visible */
+}

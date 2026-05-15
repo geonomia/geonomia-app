@@ -1,0 +1,2 @@
+GET https://pub.orcid.org/v3.0/0000-0003-3700-4884/person
+Accept: application/json

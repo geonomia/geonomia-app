@@ -1,0 +1,6 @@
+datasette
+datasette-cluster-map
+datasette-reconcile
+pandas
+pygbif
+sqlite-utils

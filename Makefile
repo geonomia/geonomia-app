@@ -136,7 +136,7 @@ join: $(OCC_FILE_TSV)
 # 	mkdir -p $(DATA_DIR)
 # 	gunzip -c $< > $@	
 
-$(DATA_DIR)/yr_rb_rn.tsv: $(VENV_SENTINEL) occclu2reconciliationbackend.py $(OCC_FILE_TSV)
+$(DATA_DIR)/rb_rn_yr.tsv: $(VENV_SENTINEL) occclu2reconciliationbackend.py $(OCC_FILE_TSV)
 	mkdir -p $(DATA_DIR)
 	$(PYTHON) occclu2reconciliationbackend.py $(OCC_FILE_TSV) \
 			--source_fields 'recordedby_first_familyname,recordnumber_mainnumber,year' \
@@ -158,7 +158,7 @@ $(DATA_DIR)/rb_day.tsv: $(VENV_SENTINEL) occclu2reconciliationbackend.py $(OCC_F
 			--destination_field 'reconciliation_backend_key' \
 			$@
 
-$(DATA_DIR)/geonomia-$(GBIF_DOWNLOAD_COUNTRYCODE).db: $(VENV_SENTINEL) $(OCC_FILE_TSV) $(OCC_SUMMARY_W_PROFILES_FILE) $(BIONOMIA_CLAIMS_RB_FILTERED_CSV) $(BIONOMIA_PROFILES_FILTERED_CSV) $(DATA_DIR)/yr_rb_rn.tsv
+$(DATA_DIR)/geonomia-$(GBIF_DOWNLOAD_COUNTRYCODE).db: $(VENV_SENTINEL) $(OCC_FILE_TSV) $(OCC_SUMMARY_W_PROFILES_FILE) $(BIONOMIA_CLAIMS_RB_FILTERED_CSV) $(BIONOMIA_PROFILES_FILTERED_CSV) $(DATA_DIR)/rb_rn_yr.tsv
 	mkdir -p $(DATA_DIR)
 	$(SQLITE_UTILS) create-database $@
 	$(SQLITE_UTILS) insert $@ cluster $(OCC_SUMMARY_W_PROFILES_FILE) --tsv --detect-types --pk=cluster_stage1_id
@@ -168,8 +168,8 @@ $(DATA_DIR)/geonomia-$(GBIF_DOWNLOAD_COUNTRYCODE).db: $(VENV_SENTINEL) $(OCC_FIL
 	$(SQLITE_UTILS) insert $@ profile $(BIONOMIA_PROFILES_FILTERED_CSV) --tsv --detect-types  --pk=Object
 	$(SQLITE_UTILS) transform $@ cluster --add-foreign-key profile_Object profile Object
 	$(SQLITE_UTILS) create-index $@ occ cluster_stage1_id
-	$(SQLITE_UTILS) insert $@ reconcile_yr_rb_rn $(DATA_DIR)/yr_rb_rn.tsv --tsv --detect-types --pk=gbifid
-	$(SQLITE_UTILS) create-index $@ reconcile_yr_rb_rn reconciliation_backend_key
+	$(SQLITE_UTILS) insert $@ reconcile_rb_rn_yr $(DATA_DIR)/rb_rn_yr.tsv --tsv --detect-types --pk=gbifid
+	$(SQLITE_UTILS) create-index $@ reconcile_rb_rn_yr reconciliation_backend_key
 
 data/metadata.json: $(VENV_SENTINEL) get_download_metadata.py resources/metadata.json 
 		mkdir -p data

@@ -182,7 +182,7 @@ dbmetadata: data/metadata.json
 all: db dbmetadata
 
 run: $(DATA_DIR)/geonomia-$(GBIF_DOWNLOAD_COUNTRYCODE).db data/metadata.json
-	$(DATASETTE) $(DATA_DIR)/geonomia-$(GBIF_DOWNLOAD_COUNTRYCODE).db --cors --setting sql_time_limit_ms 3500 --metadata data/metadata.json --plugins-dir plugins
+	$(DATASETTE) $(DATA_DIR)/geonomia-$(GBIF_DOWNLOAD_COUNTRYCODE).db --cors --setting sql_time_limit_ms 12000 --metadata data/metadata.json --plugins-dir plugins
 
 # newline := $(strip )
 

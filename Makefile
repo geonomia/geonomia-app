@@ -18,6 +18,8 @@ OCC_CLUSTERED_FILE := $(DATA_DIR_CLUSTERED)/occurrences-$(GBIF_DOWNLOAD_COUNTRYC
 OCC_SUMMARY_FILE := $(DATA_DIR_CLUSTERED)/occurrences-$(GBIF_DOWNLOAD_COUNTRYCODE)-clustered-stage1-summary.tsv
 OCC_SUMMARY_W_PROFILES_FILE := $(DATA_DIR_CLUSTERED)/occurrences-$(GBIF_DOWNLOAD_COUNTRYCODE)-clustered-stage1-summary-w-profiles.tsv
 
+.PRECIOUS: $(OCC_FILE_TSV)
+
 echo:
 	@echo "GBIF_DOWNLOAD_COUNTRYCODE is set to: $(GBIF_DOWNLOAD_COUNTRYCODE)"
 	@echo "This will be used to download and process occurrence data for the specified country code."

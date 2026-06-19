@@ -7,6 +7,10 @@ def main():
     parser.add_argument("occ_clustered_file", help="Path to the clustered occurrence file (TSV)")
     parser.add_argument("output_file", help="Path to the output file for the joined data (TSV)")
     parser.add_argument("--id_col_name", default="gbifid", help="Name of the column containing the occurrence id in both files (default: 'gbifid')")
+    parser.add_argument("--cluster_col_name", default="cluster_stage1_id", help="Name of the column containing the cluster id in occ_clustered file (default: 'cluster_stage1_id')")
+    parser.add_argument("--recordnumber_col_name", default="recordnumber_mainnumber", help="Name of the column containing the recordnumber in occ_clustered file (default: 'recordnumber_mainnumber')")
+    parser.add_argument("--eventdate_col_name", default="eventdate", help="Name of the column containing the eventdate in occ_clustered file (default: 'eventdate')")
+    parser.add_argument("--hascoordinate_col_name", default="hascoordinate", help="Name of the column containing the hascoordinate flag in occ_clustered file (default: 'hascoordinate')")
 
     args = parser.parse_args()
 
@@ -63,6 +67,10 @@ def main():
         df_joined[col] = df_joined[col].map({True: 1, False: 0}).astype('Int64')
         print(f"post-conversion distribution of values in column {col}:\n {df_joined[col].value_counts(dropna=False)}")
     # df_joined[bool_cols] = df_joined[bool_cols].astype(int)
+    if args.hascoordinate_col_name not in bool_cols:
+        df_joined[args.hascoordinate_col_name] = df_joined[args.hascoordinate_col_name].map({'true': 1, 'false': 0}).astype('Int64')
+        print(f"post-conversion distribution of values in column {args.hascoordinate_col_name}:\n {df_joined[args.hascoordinate_col_name].value_counts(dropna=False)}")
+        # print(f"Warning: hascoordinate column '{args.hascoordinate_col_name}' is not boolean in the joined data, it will not be converted to integer. Please check the column name and the data types in the original and clustered files.")
 
     # Display group by eligibility_columns to check the distribution of eligible vs ineligible occurrences
     for col in eligibility_columns:
@@ -70,6 +78,59 @@ def main():
 
     print("Distribution of eligible vs ineligible occurrences:")
     print(df_joined.groupby(eligibility_columns).size().reset_index(name='count'))
+
+    # Add details for where each record could receive coordinates
+    # Options are: 
+    # (1) already has coordinates (specimen metadata), 
+    # (2) a duplicate collecting event has coordinates (collecting event), 
+    # (3) another record collected by the same collector on the same day has coordinates (collector day)
+
+    # (1) already has coordinates ("specimen_metadata")
+    df_joined['coordinate_source_specimen_metadata'] = 0
+    mask = (df_joined[args.hascoordinate_col_name] == 1)
+    df_joined.loc[mask, 'coordinate_source_specimen_metadata'] = 1
+
+    # (2) a duplicate collecting event has coordinates ("collecting_event")
+    # group records by collecting event (cluster_id is not noise, cluster_id is shared, recordnumber_mainnumber is shared)
+    mask = (df_joined[args.cluster_col_name] != -1)
+    group_cols = [args.cluster_col_name, args.recordnumber_col_name]
+    dfg = df_joined[mask].groupby(group_cols).agg(has_coordinate_true = (args.hascoordinate_col_name, 'sum'),
+                                              has_coordinate_false = (args.hascoordinate_col_name, lambda x: x.count() - x.sum())).reset_index()
+    dfg['coordinate_source_collecting_event'] = 0
+    dfg.loc[dfg['has_coordinate_true'] > 0, 'coordinate_source_collecting_event'] = 1
+    df_joined = df_joined.merge(dfg[group_cols + ['coordinate_source_collecting_event']], on=group_cols, how='left')
+
+    # (3) another record collected by the same collector on the same day has coordinates ("collector_day")
+    # group records by collector day (cluster_id is not noise, cluster_id is shared, eventdate is shared)
+    mask = (df_joined[args.cluster_col_name] != -1)
+    group_cols = [args.cluster_col_name, args.eventdate_col_name]
+    dfg = df_joined[mask].groupby(group_cols).agg(has_coordinate_true = (args.hascoordinate_col_name, 'sum'),
+                                              has_coordinate_false = (args.hascoordinate_col_name, lambda x: x.count() - x.sum())).reset_index()
+    dfg['coordinate_source_collector_day'] = 0
+    dfg.loc[dfg['has_coordinate_true'] > 0, 'coordinate_source_collector_day'] = 1
+    df_joined = df_joined.merge(dfg[group_cols + ['coordinate_source_collector_day']], on=group_cols, how='left')
+    
+    for col in ['hascoordinate', 'coordinate_source_specimen_metadata', 'coordinate_source_collecting_event', 'coordinate_source_collector_day']:
+        # update any nulls to 0, as the absence of evidence for coordinates from any source is evidence of absence of coordinates from that source
+        df_joined[col] = df_joined[col].fillna(0).astype('Int64')
+
+    print(df_joined.groupby(['coordinate_source_specimen_metadata', 'coordinate_source_collecting_event', 'coordinate_source_collector_day']).size().reset_index(name='count'))
+    
+    # Build a single column for coordinate source, with values "specimen_metadata", "collecting_event", "collector_day", or "none"
+    def determine_coordinate_source(row):
+        if row['coordinate_source_specimen_metadata'] == 1:
+            return 'specimen_metadata'
+        elif row['coordinate_source_collecting_event'] == 1:
+            return 'collecting_event'
+        elif row['coordinate_source_collector_day'] == 1:
+            return 'collector_day'
+        else:
+            return 'none'
+
+    df_joined['coordinate_source'] = df_joined.apply(determine_coordinate_source, axis=1)
+    # Display the distribution of coordinate sources
+    print("Distribution of coordinate sources:")
+    print(df_joined['coordinate_source'].value_counts(dropna=False))
 
     # Save the joined data to a new TSV file
     df_joined.to_csv(args.output_file, sep='\t', index=False)

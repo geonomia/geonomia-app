@@ -25,7 +25,7 @@ def main():
     print(df_claims.sample(n=1).T)
 
     # Load the occ file
-    df_occ = pd.read_csv(args.occ_file, sep='\t', usecols=['gbifid', 'recordedby_first_familyname', 'cluster_stage1_id'])
+    df_occ = pd.read_csv(args.occ_file, sep='\t', usecols=['gbifid', 'recordedby_first_familyname', 'cluster_stage1_id'], engine='python', on_bad_lines='skip')
     print(f"Loaded {len(df_occ)} occurrences from {args.occ_file}")
     print(f"Sample occurrences:\n {df_occ.head()}")
     print(df_occ.sample(n=1).T)

@@ -6,17 +6,18 @@
 # e.g. occurrences-prepared-COUNTRYCODE.tsv
 bionomia_public_claims_download_url = https://zenodo.org/records/19363546/files/bionomia-public-claims.csv.gz?download=1
 
+SHARED_DIR ?=../geonomia-cluster
 DOWNLOAD_DIR  := downloads
-DOWNLOAD_DIR_CLUSTERED  := ../geonomia-cluster/downloads
+DOWNLOAD_DIR_SHARED := $(SHARED_DIR)/downloads
 
 DATA_DIR := data
-DATA_DIR_CLUSTERED := ../geonomia-cluster/data
+DATA_DIR_SHARED := $(SHARED_DIR)/data
 
-OCC_FILE_ZIP := $(DOWNLOAD_DIR_CLUSTERED)/occurrences-$(GBIF_DOWNLOAD_COUNTRYCODE).zip
+OCC_FILE_ZIP := $(DOWNLOAD_DIR_SHARED)/occurrences-$(GBIF_DOWNLOAD_COUNTRYCODE).zip
 OCC_FILE_TSV := $(DATA_DIR)/occurrences-$(GBIF_DOWNLOAD_COUNTRYCODE).tsv
-OCC_CLUSTERED_FILE := $(DATA_DIR_CLUSTERED)/occurrences-$(GBIF_DOWNLOAD_COUNTRYCODE)-clustered-stage1.tsv
-OCC_SUMMARY_FILE := $(DATA_DIR_CLUSTERED)/occurrences-$(GBIF_DOWNLOAD_COUNTRYCODE)-clustered-stage1-summary.tsv
-OCC_SUMMARY_W_PROFILES_FILE := $(DATA_DIR_CLUSTERED)/occurrences-$(GBIF_DOWNLOAD_COUNTRYCODE)-clustered-stage1-summary-w-profiles.tsv
+OCC_CLUSTERED_FILE := $(DATA_DIR_SHARED)/occurrences-$(GBIF_DOWNLOAD_COUNTRYCODE)-clustered-stage1.tsv
+OCC_SUMMARY_FILE := $(DATA_DIR_SHARED)/occurrences-$(GBIF_DOWNLOAD_COUNTRYCODE)-clustered-stage1-summary.tsv
+OCC_SUMMARY_W_PROFILES_FILE := $(DATA_DIR_SHARED)/occurrences-$(GBIF_DOWNLOAD_COUNTRYCODE)-clustered-stage1-summary-w-profiles.tsv
 
 .PRECIOUS: $(OCC_FILE_TSV)
 

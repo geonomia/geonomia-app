@@ -14,7 +14,7 @@ def main():
 
     args = parser.parse_args()
 
-    df_occ = pd.read_csv(args.occ_file, sep='\t', compression='zip', on_bad_lines="skip", engine='python', low_memory=False)
+    df_occ = pd.read_csv(args.occ_file, sep='\t', compression='zip', on_bad_lines="skip", engine='python')
     print(f"Loaded {len(df_occ)} occurrences from {args.occ_file}")
     print(f"Columns in occurrence file: {df_occ.columns.tolist()}")
     eligibility_columns = [col for col in df_occ.columns if col.endswith('_eligible')]

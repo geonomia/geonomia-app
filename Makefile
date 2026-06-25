@@ -6,12 +6,13 @@
 # e.g. occurrences-prepared-COUNTRYCODE.tsv
 bionomia_public_claims_download_url = https://zenodo.org/records/19363546/files/bionomia-public-claims.csv.gz?download=1
 
-SHARED_DIR ?=../geonomia-cluster
-DOWNLOAD_DIR  := downloads
+SHARED_DIR 			?=../geonomia-shared
+
+DOWNLOAD_DIR  		:= downloads
 DOWNLOAD_DIR_SHARED := $(SHARED_DIR)/downloads
 
-DATA_DIR := data
-DATA_DIR_SHARED := $(SHARED_DIR)/data
+DATA_DIR 			:= data
+DATA_DIR_SHARED 	:= $(SHARED_DIR)/data
 
 OCC_FILE_ZIP := $(DOWNLOAD_DIR_SHARED)/occurrences-$(GBIF_DOWNLOAD_COUNTRYCODE).zip
 OCC_FILE_TSV := $(DATA_DIR_SHARED)/occurrences-$(GBIF_DOWNLOAD_COUNTRYCODE).tsv
@@ -168,6 +169,7 @@ $(DATA_DIR)/geonomia-$(GBIF_DOWNLOAD_COUNTRYCODE).db: $(VENV_SENTINEL) $(OCC_FIL
 	$(SQLITE_UTILS) insert $@ occ $(OCC_FILE_TSV) --tsv --detect-types
 	$(SQLITE_UTILS) transform $@ occ --add-foreign-key cluster_stage1_id cluster cluster_stage1_id
 	$(SQLITE_UTILS) enable-fts $@ occ locality recordedBy
+	$(SQLITE_UTILS) enable-fts $@ cluster habitat locality
 	$(SQLITE_UTILS) insert $@ profile $(BIONOMIA_PROFILES_FILTERED_CSV) --tsv --detect-types  --pk=Object
 	$(SQLITE_UTILS) transform $@ cluster --add-foreign-key profile_Object profile Object
 	$(SQLITE_UTILS) create-index $@ occ cluster_stage1_id
@@ -181,6 +183,11 @@ data/metadata.json: $(VENV_SENTINEL) get_download_metadata.py resources/metadata
 dbmetadata: data/metadata.json
 
 all: db dbmetadata
+
+deploy: all
+	cp data/metadata.json $(DATA_DIR_SHARED)/metadata.json
+	cp data/geonomia-$(GBIF_DOWNLOAD_COUNTRYCODE).db $(DATA_DIR_SHARED)/geonomia-$(GBIF_DOWNLOAD_COUNTRYCODE).db
+	cp -r plugins $(DATA_DIR_SHARED)/plugins
 
 run: $(DATA_DIR)/geonomia-$(GBIF_DOWNLOAD_COUNTRYCODE).db data/metadata.json
 	$(DATASETTE) $(DATA_DIR)/geonomia-$(GBIF_DOWNLOAD_COUNTRYCODE).db --cors --setting sql_time_limit_ms 12000 --metadata data/metadata.json --plugins-dir plugins

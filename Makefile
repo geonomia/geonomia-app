@@ -169,7 +169,7 @@ $(DATA_DIR)/geonomia-$(GBIF_DOWNLOAD_COUNTRYCODE).db: $(VENV_SENTINEL) $(OCC_FIL
 	$(SQLITE_UTILS) insert $@ occ $(OCC_FILE_TSV) --tsv --detect-types
 	$(SQLITE_UTILS) transform $@ occ --add-foreign-key cluster_stage1_id cluster cluster_stage1_id
 	$(SQLITE_UTILS) enable-fts $@ occ locality recordedBy
-	$(SQLITE_UTILS) enable-fts $@ cluster habitat locality
+	$(SQLITE_UTILS) enable-fts $@ cluster habitat itinerary collecting_areas
 	$(SQLITE_UTILS) insert $@ profile $(BIONOMIA_PROFILES_FILTERED_CSV) --tsv --detect-types  --pk=Object
 	$(SQLITE_UTILS) transform $@ cluster --add-foreign-key profile_Object profile Object
 	$(SQLITE_UTILS) create-index $@ occ cluster_stage1_id

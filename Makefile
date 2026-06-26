@@ -16,8 +16,10 @@ DATA_DIR_SHARED 	:= $(SHARED_DIR)/data
 
 OCC_FILE_ZIP := $(DOWNLOAD_DIR_SHARED)/occurrences-$(GBIF_DOWNLOAD_COUNTRYCODE).zip
 OCC_FILE_TSV := $(DATA_DIR_SHARED)/occurrences-$(GBIF_DOWNLOAD_COUNTRYCODE).tsv
-OCC_CLUSTERED_FILE := $(OCC_FILE_TSV)
-OCC_SUMMARY_FILE := $(DATA_DIR_SHARED)/trip_cluster_summary.txt
+OCC_CLUSTERED_SHARED_FILE := $(OCC_FILE_TSV)
+OCC_CLUSTERED_FILE := $(DATA_DIR)/occurrences-$(GBIF_DOWNLOAD_COUNTRYCODE)-clustered-for-insert.tsv
+OCC_SUMMARY_SHARED_FILE := $(DATA_DIR_SHARED)/trip_cluster_summary.txt
+OCC_SUMMARY_FILE := $(DATA_DIR)/trip_cluster_summary-for-insert.txt
 OCC_SUMMARY_W_PROFILES_FILE := $(DATA_DIR_SHARED)/occurrences-$(GBIF_DOWNLOAD_COUNTRYCODE)-clustered-stage1-summary-w-profiles.tsv
 
 #.PRECIOUS: $(OCC_FILE_TSV)
@@ -61,6 +63,15 @@ $(VENV_SENTINEL): requirements.txt
 	touch $(VENV_SENTINEL)
 
 install: $(VENV_SENTINEL)
+
+# Fix problem with float ids in CSV files by converting them to integers
+$(OCC_CLUSTERED_FILE): $(VENV_SENTINEL) fix_cluster_ids.py $(OCC_CLUSTERED_SHARED_FILE)
+	mkdir -p $(DATA_DIR)
+	$(PYTHON) fix_cluster_ids.py $(OCC_CLUSTERED_SHARED_FILE) $@
+
+$(OCC_SUMMARY_FILE): $(VENV_SENTINEL) fix_cluster_ids.py $(OCC_SUMMARY_SHARED_FILE)
+	mkdir -p $(DATA_DIR)
+	$(PYTHON) fix_cluster_ids.py --is_primary_key $(OCC_SUMMARY_SHARED_FILE) $@
 
 ## Download Bionomia claims 
 $(DOWNLOAD_DIR)/bionomia_public_claims.csv.gz: 

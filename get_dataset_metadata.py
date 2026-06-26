@@ -21,7 +21,7 @@ def main():
 
     for dataset_key in dataset_keys:
         dataset_metadata['datasetkey'] = dataset_key
-        gbif_metadata = reg.dataset(dataset_key)
+        gbif_metadata = reg.datasets(uuid=dataset_key)
         license_url = gbif_metadata['license']
         # If the license URL is in our licenses dictionary, add the license and license_url to the dataset metadata
         if license_url in licenses:

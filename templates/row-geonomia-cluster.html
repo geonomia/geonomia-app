@@ -1,0 +1,151 @@
+{% extends "row.html" %}
+
+{% set row = display_rows[0] %}
+
+{% block extra_head %}
+<style>
+    .gbif-card { border: 1px solid #ddd; padding: 20px; border-radius: 8px; background: #f9f9f9; }
+    .header-section { border-bottom: 2px solid #eee; margin-bottom: 20px; }
+    .meta-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+    .cluster-highlight { background: #e7f3fe; padding: 15px; border-left: 5px solid #2196F3; margin: 20px 0; }
+    .table-container { max-height: 300px; overflow-y: auto; }
+</style>
+<link
+  rel="stylesheet"
+  href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+/>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+{% endblock %}
+
+{% block content %}
+<div class="cluster-info">
+    <!-- Header Section -->
+    <div class="header-section">
+        <h1>{{ row.recordedby_first_familyname }}, Malaysia, {{row.year_min}} {% if row.year_max != row.year_min %}–{{ row.year_max }}{% endif %} ({{row.num_records}} specimens)</h1>
+    </div>
+
+    <!-- Main Content Grid -->
+    <div class="meta-grid">
+        <div>
+            <h3>Collecting Trip Details</h3>
+            <ul>
+                <li><strong>Habitat:</strong> {{ row.habitat }}</li>
+                <li><strong>Itinerary:</strong> {{ row.itinerary }}</li>
+                <li><strong>Collecting areas:</strong> {{ row.collecting_areas }}</li>
+                <li><strong>Placenames:</strong> {{ row.placenames }}</li>
+                <li><strong>Regional units covered:</strong> {{ row.regional_units }}</li>
+            </ul>
+        </div>
+        <!-- Supporting data for bionomia claim -->
+         {% set bionomia_profile = row.profile_Object %} 
+        <div>
+            <h3>Record status</h3>
+            <ul>
+                <li>Number of records with coordinates: {{ row.hascoordinate_count }} ({{ row.hascoordinate_pct }}%)</li>
+                <li>(Collecting event) Number of records in GBIF clusters: (todo) %)</li>
+                <li>(Collector career) Number of records with Bionomia claims: (todo) %)</li>
+            </ul>
+            <h3>Actions</h3>
+            <ul>
+                <li>View in <a href="https://geonomia.lovable.app">geonomia explore (georeferencing tool)</a></li>
+                <li>Export all localities in this collecting trip for georeferencing in tool of your choice: <a href="/geonomia/export-localities?cluster_id={{ row.cluster_stage1_id }}">Download CSV</a></li>
+                {% if bionomia_profile %}
+                <li>Attribute all specimens in this collecting trip as recordedby <a href="https://bionomia.net/{{ bionomia_profile }}">{{ row.recordedby_first_familyname }}</a>: <a href="/geonomia/export-claims?cluster_id={{ row.cluster_stage1_id }}&profile={{ bionomia_profile }}">Download CSV</a></li>
+                {% else %}
+                <li>Attribute all specimens in this collecting trip as recordedby {{ row.recordedby_first_familyname }}: <a href="/geonomia/export-claims?cluster_id={{ row.cluster_stage1_id }}&profile={{ bionomia_profile }}">Download CSV</a></li>
+                {% endif %}
+            </ul>
+        </div>
+    </div>
+
+    <!-- Map Placeholder -->
+
+    </div>    
+    <div class="map-section">
+        <div id="map" style="height: 400px"></div>
+<!-- Fetch related occurrences which are plottable on the map -->
+ {% set occs = sql("select gbifid, recordedby_first_familyname, recordnumber_mainnumber, decimallatitude, decimallongitude from occ where cluster_stage1_id = ? and decimallatitude <> '' and decimallongitude <> ''", [row.cluster_stage1_id]) %} 
+    <script>
+const occs = [
+  {% for occ in occs %}
+    {
+      "gbifid": "{{ occ.gbifid }}",
+      "recordedby_first_familyname": "{{ occ.recordedby_first_familyname }}",
+      "recordnumber_mainnumber": "{{ occ.recordnumber_mainnumber }}",
+      "lat": "{{ occ.decimallatitude }}",
+      "lon": "{{ occ.decimallongitude }}"
+    }{% if not loop.last %},{% endif %}
+  {% endfor %}
+];
+</script>
+
+<script>
+const map = L.map('map');
+
+// base layer
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+  attribution: '© OpenStreetMap contributors'
+}).addTo(map);
+
+// No "parent marker", though we could show inferred polygon here
+
+// children markers
+const bounds = [];
+
+occs.forEach(occ => {
+  const marker = L.marker([occ.lat, occ.lon])
+    .addTo(map)
+    .bindPopup(occ.recordedby_first_familyname + " - " + occ.recordnumber_mainnumber + " (GBIF ID: " + occ.gbifid + ")");
+
+  bounds.push([occ.lat, occ.lon]);
+});
+
+// IMPORTANT: always set a view
+if (bounds.length > 0) {
+  if (bounds.length === 1) {
+    map.setView(bounds[0], 13);
+  } else {
+    map.fitBounds(bounds);
+  }
+} else {
+  map.setView([0, 0], 2); // fallback world view
+}
+</script>
+
+
+</div>
+
+ <div class="meta-grid">
+    <div>
+        <h3>Contributing datasets</h3>
+        <!-- Show the contribution of each GBIF dataset to the cluster -->
+          {% set datasets = sql("select occ.datasetkey, ds.name, count(*) as count from occ occ inner join dataset ds on occ.datasetkey = ds.datasetkey where cluster_stage1_id = ? group by occ.datasetkey, ds.name", [row.cluster_stage1_id]) %} 
+  {% for dataset in datasets %}
+    <p><a href="https://www.gbif.org/dataset/{{ dataset.datasetkey }}" target="_blank">{{ dataset.name }}</a> - {{ dataset.count }} records</p>
+  {% endfor %}
+    </div>
+    <div class="table-container">
+    <!-- Show the localities visited in this cluster -->
+      {% set localities = sql("select locality, eventdate, hascoordinate from occ where cluster_stage1_id = ? order by eventdate", [row.cluster_stage1_id]) %} 
+    <!-- TODO Show this in a vertically scrollable table -->
+     <table>
+        <thead>
+            <tr>
+                <th>Locality (📍 indicates records with coordinates)</th>
+                <th>Event Date</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for locality in localities %}
+            <tr>
+                <!-- Show a map marker pin icon if the locality has coordinates -->
+                <td>{% if locality.hascoordinate == 1 %}<span title="Has coordinates">📍</span>{% endif %}{{ locality.locality }}</td>
+                <td>{{ locality.eventdate }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,82 @@
+{% extends "row.html" %}
+
+{% set row = display_rows[0] %}
+
+{% block extra_head %}
+<style>
+    .gbif-card { border: 1px solid #ddd; padding: 20px; border-radius: 8px; background: #f9f9f9; }
+    .header-section { border-bottom: 2px solid #eee; margin-bottom: 20px; }
+    .meta-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+    .cluster-highlight { background: #e7f3fe; padding: 15px; border-left: 5px solid #2196F3; margin: 20px 0; }
+</style>
+<link
+  rel="stylesheet"
+  href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+/>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+{% endblock %}
+
+{% block content %}
+<div class="gbif-card">
+    <!-- Header Section -->
+    <div class="header-section">
+        <h1>{{ row.scientificname }}</h1>
+        <p><strong>GBIF ID:</strong> <a href="https://gbif.org/occurrence/{{ row.gbifid }}">{{ row.gbifid }}</a></p>
+    </div>
+
+    <!-- Main Content Grid -->
+    <div class="meta-grid">
+        <div>
+            <h3>Occurrence Details</h3>
+            <ul>
+                <li><strong>Recorded by:</strong> {{ row.recordedby }}</li>
+                <li><strong>Date:</strong> {{ row.eventdate }}</li>
+                <li><strong>Locality:</strong> {{ row.locality }}</li>
+                <li><strong>Country Code:</strong> {{ row.countrycode }}</li>
+            </ul>
+        </div>
+        <div>
+            <h3>Dataset Context</h3>
+            <ul>
+                <li><strong>Basis of Record:</strong> {{ row.basisofrecord }}</li>
+                <li><strong>Institution:</strong> {{ row.institutionid }}</li>
+                <li><strong>Dataset Key:</strong> {{ row.datasetkey }}</li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- Geonomia Cluster Context -->
+    cluster_stage1_id = {{ row.cluster_stage1_id }}
+    {% if row.cluster_stage1_id != '' and row.cluster_stage1_id > -1 %}
+    <div class="cluster-highlight">
+        <h3>Collecting Trip Context</h3>
+        <p>This specimen is part of a reconstructed collecting trip discovered by <strong>Geonomia</strong>.</p>
+        <p>
+            <a href="/geonomia/cluster/{{ row.cluster_stage1_id }}" class="button">
+                View Collecting Trip Summary (Cluster ID: {{ row.cluster_stage1_id }})
+            </a>
+        </p>
+        <p><em>Use this summary to understand the broader geographic context and itinerary of this specific collection event.</em></p>
+    </div>
+    {% else %}
+    <p>This specimen is not part of a reconstructed collecting trip.</p>
+    {% endif %}
+
+    <!-- Map Placeholder -->
+
+    </div>    
+    <div class="map-section">
+<div id="map" style="height: 400px"></div>
+
+<script>
+const map = L.map('map').setView([{{ row.decimallatitude }}, {{ row.decimallongitude }}], 13);
+
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+  attribution: '© OpenStreetMap contributors'
+}).addTo(map);
+
+L.marker([{{ row.decimallatitude }}, {{ row.decimallongitude }}]).addTo(map);
+</script>    </div>
+
+{% endblock %}

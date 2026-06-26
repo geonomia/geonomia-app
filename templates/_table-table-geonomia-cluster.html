@@ -1,0 +1,15 @@
+{% block table %}
+<div class="table-container">
+  <table>
+    <tbody>
+      {% for row in display_rows %}
+      <tr>
+        <td>
+          {% if row.num_records > 50 %}✨{% endif %}<a href="/geonomia/cluster/{{ row.cluster_stage1_id }}">{{ row.recordedby_first_familyname }} in {{ row.year_min }}{% if row.year_max != row.year_min %}–{{ row.year_max }}{% endif %}</a>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

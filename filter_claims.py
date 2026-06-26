@@ -51,7 +51,7 @@ def main():
 
 
     # Save the filtered claims to a new gzipped CSV file
-    output_columns = ['Subject', 'Predicate', 'Object']  
+    output_columns = ['Subject', 'Predicate', 'Object','family_name_agreement']  
     df_claims_filtered[df_claims_filtered['family_name_agreement']][output_columns].to_csv(args.output_file, index=False, sep='\t')
 
 if __name__ == "__main__":

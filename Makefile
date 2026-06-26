@@ -181,7 +181,7 @@ $(DATA_DIR)/dataset_metadata.tsv: $(VENV_SENTINEL) get_dataset_metadata.py $(OCC
 	mkdir -p $(DATA_DIR)
 	$(PYTHON) get_dataset_metadata.py $(OCC_FILE_TSV) --dataset_col_name datasetkey $@
 
-$(DATA_DIR)/geonomia-$(GBIF_DOWNLOAD_COUNTRYCODE).db: $(VENV_SENTINEL) $(OCC_FILE_TSV) $(OCC_SUMMARY_W_PROFILES_FILE) $(BIONOMIA_CLAIMS_RB_FILTERED_CSV) $(BIONOMIA_PROFILES_FILTERED_CSV) $(DATA_DIR)/rb_rn_yr.tsv $(DATA_DIR)/dataset_metadata.tsv
+$(DATA_DIR)/geonomia-$(GBIF_DOWNLOAD_COUNTRYCODE).db: $(VENV_SENTINEL) $(OCC_FILE_TSV) $(OCC_SUMMARY_W_PROFILES_FILE) $(BIONOMIA_CLAIMS_RB_FILTERED_CSV) $(BIONOMIA_PROFILES_FILTERED_CSV) $(DATA_DIR)/rb_rn_yr.tsv $(DATA_DIR)/dataset_metadata.tsv $(OCC_WITH_PROFILES_FILE)
 	mkdir -p $(DATA_DIR)
 	$(SQLITE_UTILS) create-database $@
 	$(SQLITE_UTILS) insert $@ cluster $(OCC_SUMMARY_W_PROFILES_FILE) --tsv --detect-types --pk=cluster_stage1_id

@@ -21,7 +21,7 @@ OCC_CLUSTERED_FILE := $(DATA_DIR)/occurrences-$(GBIF_DOWNLOAD_COUNTRYCODE)-clust
 OCC_SUMMARY_SHARED_FILE := $(DATA_DIR_SHARED)/trip_cluster_summary.txt
 OCC_SUMMARY_FILE := $(DATA_DIR)/trip_cluster_summary-for-insert.txt
 OCC_SUMMARY_W_PROFILES_FILE := $(DATA_DIR_SHARED)/occurrences-$(GBIF_DOWNLOAD_COUNTRYCODE)-clustered-stage1-summary-w-profiles.tsv
-
+OCC_WITH_PROFILES_FILE := $(DATA_DIR_SHARED)/occurrences-$(GBIF_DOWNLOAD_COUNTRYCODE)-clustered-with-profiles.tsv
 #.PRECIOUS: $(OCC_FILE_TSV)
 
 echo:
@@ -131,6 +131,9 @@ $(BIONOMIA_PROFILES_FILTERED_CSV): $(VENV_SENTINEL) filter_profiles.py $(BIONOMI
 
 filter_profiles: $(BIONOMIA_PROFILES_FILTERED_CSV)
 
+$(OCC_WITH_PROFILES_FILE): $(VENV_SENTINEL) add_bionomia_to_occ.py $(OCC_CLUSTERED_FILE) $(BIONOMIA_CLAIMS_RB_FILTERED_CSV)
+	$(PYTHON) add_bionomia_to_occ.py $(OCC_CLUSTERED_FILE) $(BIONOMIA_CLAIMS_RB_FILTERED_CSV) $@
+
 $(OCC_SUMMARY_W_PROFILES_FILE): $(VENV_SENTINEL) migrate_profile_rels.py $(BIONOMIA_CLAIMS_RB_FILTERED_CSV) $(BIONOMIA_PROFILES_FILTERED_CSV) $(OCC_CLUSTERED_FILE) $(OCC_SUMMARY_FILE)
 	$(PYTHON) migrate_profile_rels.py $(BIONOMIA_CLAIMS_RB_FILTERED_CSV) $(BIONOMIA_PROFILES_FILTERED_CSV) $(OCC_CLUSTERED_FILE) $(OCC_SUMMARY_FILE) $@
 
@@ -182,7 +185,7 @@ $(DATA_DIR)/geonomia-$(GBIF_DOWNLOAD_COUNTRYCODE).db: $(VENV_SENTINEL) $(OCC_FIL
 	mkdir -p $(DATA_DIR)
 	$(SQLITE_UTILS) create-database $@
 	$(SQLITE_UTILS) insert $@ cluster $(OCC_SUMMARY_W_PROFILES_FILE) --tsv --detect-types --pk=cluster_stage1_id
-	$(SQLITE_UTILS) insert $@ occ $(OCC_FILE_TSV) --tsv --detect-types
+	$(SQLITE_UTILS) insert $@ occ $(OCC_WITH_PROFILES_FILE) --tsv --detect-types
 	$(SQLITE_UTILS) transform $@ occ --add-foreign-key cluster_stage1_id cluster cluster_stage1_id
 	$(SQLITE_UTILS) enable-fts $@ occ locality recordedBy
 	$(SQLITE_UTILS) enable-fts $@ cluster habitat itinerary collecting_areas

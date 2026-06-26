@@ -13,7 +13,7 @@ def main():
 
     args = parser.parse_args()
 
-    df = pd.read_csv(args.inputfile, usecols=[args.dataset_col_name])
+    df = pd.read_csv(args.inputfile, sep='\t', usecols=[args.dataset_col_name])
     # Get unique dataset keys
     dataset_keys = df[args.dataset_col_name].unique().tolist()
 

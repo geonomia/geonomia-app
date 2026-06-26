@@ -1,8 +1,10 @@
 {
+  "title"
   "databases": {
     "geonomia": {
       "tables": {
         "reconcile_yr_rb_rn": {
+          "description": "Open Refine compatible reconciliation backend for collecting event (collector family name, year, record number)",
 	        "plugins": {
             "datasette-reconcile": {
               "id_field": "gbifid",
@@ -20,6 +22,7 @@
         }
       },
         "reconcile_rb_day": {
+          "description": "Open Refine compatible reconciliation backend for collectors activity (collector family name, day)",
 	        "plugins": {
             "datasette-reconcile": {
               "id_field": "cluster_stage1_id",

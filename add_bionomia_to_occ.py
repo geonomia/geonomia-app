@@ -19,8 +19,19 @@ def main():
     df_claims = pd.read_csv(args.claims_file, sep='\t', engine='python', on_bad_lines='skip')
     logger.info(f"Loaded {len(df_claims)} filtered claims from {args.claims_file}")
 
+    # It is possible to have multiple claims for the same occurrence, and for these multiple claims to be 
+    # for different profiles with the same family name, so we will eliminate these from our port for now
+    # (alt would be to keep the first or to hold multiple profile ids in a list, but that would be more complex to handle downstream)
+    subject_counts = df_claims[df_claims.family_name_agreement]['Subject'].value_counts()
+    logger.info(f"Found {len(subject_counts)} unique subjects in claims")
+    # How many subjects have more than one claim?
+    multiple_claims_subjects = subject_counts[subject_counts > 1]
+    single_claims_subjects = subject_counts[subject_counts == 1]
+    logger.info(f"Found {len(multiple_claims_subjects)} subjects with multiple claims, disregarding these for now")
+    logger.info(f"Found {len(single_claims_subjects)} subjects with single claims")
+
     # Perform the join operation
-    df_result = pd.merge(df_occ, df_claims[df_claims.family_name_agreement][['Subject','Object']], left_on="gbifid", right_on="Subject", how="left")
+    df_result = pd.merge(df_occ, df_claims[df_claims.Subject.isin(single_claims_subjects.index)][['Subject','Object']], left_on="gbifid", right_on="Subject", how="left")
     logger.info(f"Merged data: {len(df_result)} records")
 
     # Rename the 'Object' column to 'bionomia_profile_id' for clarity

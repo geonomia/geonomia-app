@@ -162,7 +162,12 @@ $(DATA_DIR)/rb_day.tsv: $(VENV_SENTINEL) occclu2reconciliationbackend.py $(OCC_F
 			--destination_field 'reconciliation_backend_key' \
 			$@
 
-$(DATA_DIR)/geonomia-$(GBIF_DOWNLOAD_COUNTRYCODE).db: $(VENV_SENTINEL) $(OCC_FILE_TSV) $(OCC_SUMMARY_W_PROFILES_FILE) $(BIONOMIA_CLAIMS_RB_FILTERED_CSV) $(BIONOMIA_PROFILES_FILTERED_CSV) $(DATA_DIR)/rb_rn_yr.tsv
+# Make a separate table for GBIF dataset metadata, so we can show meaningful dataset names in the UI, rather than just the dataset keys.
+$(DATA_DIR)/dataset_metadata.tsv: $(VENV_SENTINEL) get_dataset_metadata.py $(OCC_FILE_TSV)
+	mkdir -p $(DATA_DIR)
+	$(PYTHON) get_dataset_metadata.py $(OCC_FILE_TSV) --dataset_col_name datasetkey $@
+
+$(DATA_DIR)/geonomia-$(GBIF_DOWNLOAD_COUNTRYCODE).db: $(VENV_SENTINEL) $(OCC_FILE_TSV) $(OCC_SUMMARY_W_PROFILES_FILE) $(BIONOMIA_CLAIMS_RB_FILTERED_CSV) $(BIONOMIA_PROFILES_FILTERED_CSV) $(DATA_DIR)/rb_rn_yr.tsv $(DATA_DIR)/dataset_metadata.tsv
 	mkdir -p $(DATA_DIR)
 	$(SQLITE_UTILS) create-database $@
 	$(SQLITE_UTILS) insert $@ cluster $(OCC_SUMMARY_W_PROFILES_FILE) --tsv --detect-types --pk=cluster_stage1_id
@@ -175,6 +180,8 @@ $(DATA_DIR)/geonomia-$(GBIF_DOWNLOAD_COUNTRYCODE).db: $(VENV_SENTINEL) $(OCC_FIL
 	$(SQLITE_UTILS) create-index $@ occ cluster_stage1_id
 	$(SQLITE_UTILS) insert $@ reconcile_rb_rn_yr $(DATA_DIR)/rb_rn_yr.tsv --tsv --detect-types --pk=gbifid
 	$(SQLITE_UTILS) create-index $@ reconcile_rb_rn_yr reconciliation_backend_key
+	$(SQLITE_UTILS) insert $@ dataset $(DATA_DIR)/dataset_metadata.tsv --tsv --detect-types --pk=datasetkey
+	$(SQLITE_UTILS) transform $@ occ --add-foreign-key datasetkey dataset datasetkey
 
 data/metadata.json: $(VENV_SENTINEL) get_download_metadata.py resources/metadata.json 
 		mkdir -p data

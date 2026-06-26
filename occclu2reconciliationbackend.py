@@ -1,5 +1,6 @@
 import argparse
 import pandas as pd
+from geonomia_dtypes import DATA_SCHEMA
 
 def main():
     parser = argparse.ArgumentParser(description="Create skeletal backend table for reconciliation service")
@@ -18,7 +19,7 @@ def main():
     cols = [args.id_col, args.cluster_id_col] + args.source_fields.split(',')
     if args.destination_id_col not in cols:
         cols.append(args.destination_id_col)
-    df = pd.read_csv(args.inputfile, sep='\t', usecols=cols)
+    df = pd.read_csv(args.inputfile, sep='\t', usecols=cols, dtype=DATA_SCHEMA)
     # Only keep rows where the specified source fields are not null, and the cluster ID is not null and not -1
     mask =  (df[args.cluster_id_col].notnull() & 
                 (~df[args.cluster_id_col].isin([-1])) )

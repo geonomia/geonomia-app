@@ -1,5 +1,6 @@
 import argparse
 import pandas as pd
+from geonomia_dtypes import DATA_SCHEMA
 
 def main():
     parser = argparse.ArgumentParser(description="Explore bool flags in outputs of clustering process")
@@ -8,7 +9,7 @@ def main():
     args = parser.parse_args()
 
     # Load the input file
-    df = pd.read_csv(args.input_file, sep='\t')
+    df = pd.read_csv(args.input_file, sep='\t', dtype=DATA_SCHEMA)
     print(f"Loaded {len(df)} rows from {args.input_file}")
 
     eligibility_cols = [col for col in df.columns if col.endswith('_eligible')]

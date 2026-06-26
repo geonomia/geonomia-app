@@ -1,6 +1,7 @@
 import argparse
 import pandas as pd
 from nameutils import familyNamesAgree
+from geonomia_dtypes import DATA_SCHEMA
 
 # Show 250 rows and all columns in pandas output
 pd.set_option('display.max_rows', 250)
@@ -25,7 +26,7 @@ def main():
     print(df_claims.sample(n=1).T)
 
     # Load the occ file
-    df_occ = pd.read_csv(args.occ_file, sep='\t', usecols=['gbifid', 'recordedby_first_familyname', 'cluster_stage1_id'], engine='python', on_bad_lines='skip')
+    df_occ = pd.read_csv(args.occ_file, sep='\t', usecols=['gbifid', 'recordedby_first_familyname', 'cluster_stage1_id'], engine='python', on_bad_lines='skip', dtype=DATA_SCHEMA)
     print(f"Loaded {len(df_occ)} occurrences from {args.occ_file}")
     print(f"Sample occurrences:\n {df_occ.head()}")
     print(df_occ.sample(n=1).T)
@@ -73,7 +74,7 @@ def main():
     clu_profile_map = df_clu_profile.set_index('cluster_stage1_id')['Object'].to_dict()
     print(f"Cluster to profile map contains {len(clu_profile_map)} entries")
 
-    df_clu = pd.read_csv(args.clu_file, sep='\t')
+    df_clu = pd.read_csv(args.clu_file, sep='\t', dtype=DATA_SCHEMA)
     print(f"Loaded {len(df_clu)} clusters from {args.clu_file}")    
     print(f"Sample clusters:\n {df_clu.head()}")
     print(df_clu.sample(n=1).T)

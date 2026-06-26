@@ -1,6 +1,7 @@
 import argparse
 import pandas as pd
 from nameutils import familyNamesAgree
+from geonomia_dtypes import DATA_SCHEMA
 
 def main():
     parser = argparse.ArgumentParser(description="Filter a bionomia claims file based on occurrence ids from a gbif download")
@@ -21,7 +22,7 @@ def main():
     #df_claims['occurrence_id'] = pd.to_numeric(df_claims['occurrence_id'], errors='coerce')
 
     # Load the occurrence ids
-    df_occ = pd.read_csv(args.occurrence_file, sep='\t', usecols=['gbifid','recordedby_first_familyname'], engine='python', on_bad_lines='skip')
+    df_occ = pd.read_csv(args.occurrence_file, sep='\t', usecols=['gbifid','recordedby_first_familyname'], engine='python', on_bad_lines='skip', dtype=DATA_SCHEMA)
     df_occ['gbifid'] = pd.to_numeric(df_occ['gbifid'], errors='coerce')
 
     print(f"Loaded {len(df_occ)} occurrence ids from {args.occurrence_file}")

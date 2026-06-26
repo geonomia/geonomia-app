@@ -209,6 +209,7 @@ deploy: all
 	cp data/metadata.json $(DATA_DIR_SHARED)/metadata.json
 	cp data/geonomia-$(GBIF_DOWNLOAD_COUNTRYCODE).db $(DATA_DIR_SHARED)/geonomia-$(GBIF_DOWNLOAD_COUNTRYCODE).db
 	cp -r plugins $(DATA_DIR_SHARED)/plugins
+	cp -r templates $(DATA_DIR_SHARED)/templates
 
 run: $(DATA_DIR)/geonomia-$(GBIF_DOWNLOAD_COUNTRYCODE).db data/metadata.json
 	$(DATASETTE) $(DATA_DIR)/geonomia-$(GBIF_DOWNLOAD_COUNTRYCODE).db --cors --setting sql_time_limit_ms 12000 --metadata data/metadata.json --plugins-dir plugins --templates-dir templates 

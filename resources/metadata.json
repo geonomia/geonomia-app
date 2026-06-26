@@ -1,11 +1,12 @@
 {
-  "title"
+  "title": "Geonomia",
+  "description": "Geonomia is a web application for exploring and analyzing biodiversity occurrence data, with a focus on collecting events and collectors. It provides tools for clustering occurrences, reconciling collector names, and visualizing data on maps.",
   "databases": {
     "geonomia": {
       "tables": {
         "reconcile_yr_rb_rn": {
           "description": "Open Refine compatible reconciliation backend for collecting event (collector family name, year, record number)",
-	        "plugins": {
+          "plugins": {
             "datasette-reconcile": {
               "id_field": "gbifid",
               "name_field": "reconciliation_backend_key",
@@ -19,11 +20,11 @@
               "service_name": "Collecting event reconciliation",
               "view_url": "https://gbif.org/occurrence/{{id}}"
             }
-        }
-      },
+          }
+        },
         "reconcile_rb_day": {
           "description": "Open Refine compatible reconciliation backend for collectors activity (collector family name, day)",
-	        "plugins": {
+          "plugins": {
             "datasette-reconcile": {
               "id_field": "cluster_stage1_id",
               "name_field": "reconciliation_backend_key",
@@ -37,24 +38,24 @@
               "service_name": "Collecting trip reconciliation",
               "view_url": "http://127.0.0.1:8001/geonomia-MY/cluster/{{id}}"
             }
-        }
-      },
-      "cluster": {  
-          "columns":{
-			  "cluster_num_id": {
-				  "link": "/cluster/{value}"
-			  }
-			}
-		},
+          }
+        },
+        "cluster": {
+          "columns": {
+            "cluster_num_id": {
+              "link": "/cluster/{value}"
+            }
+          }
+        },
         "occ": {
-          "columns":{
-			  "cluster_num_id": {
-				  "link": "/cluster/{value}"
-			  },
-			  "gbifID": {
-				  "link": "https://gbif.org/occurrence/{value}"
-			  }
-		  },  
+          "columns": {
+            "cluster_num_id": {
+              "link": "/cluster/{value}"
+            },
+            "gbifID": {
+              "link": "https://gbif.org/occurrence/{value}"
+            }
+          },
           "plugins": {
             "datasette-cluster-map": {
               "latitude_column": "decimalLatitude",

@@ -4,7 +4,7 @@
   "databases": {
     "geonomia": {
       "tables": {
-        "reconcile_yr_rb_rn": {
+        "reconcile_rb_rn_yr": {
           "description": "Open Refine compatible reconciliation backend for collecting event (collector family name, year, record number)",
           "plugins": {
             "datasette-reconcile": {
@@ -19,24 +19,6 @@
               "max_limit": 5,
               "service_name": "Collecting event reconciliation",
               "view_url": "https://gbif.org/occurrence/{{id}}"
-            }
-          }
-        },
-        "reconcile_rb_day": {
-          "description": "Open Refine compatible reconciliation backend for collectors activity (collector family name, day)",
-          "plugins": {
-            "datasette-reconcile": {
-              "id_field": "cluster_stage1_id",
-              "name_field": "reconciliation_backend_key",
-              "type_default": [
-                {
-                  "id": "collectingTrip",
-                  "name": "CollectingTrip"
-                }
-              ],
-              "max_limit": 5,
-              "service_name": "Collecting trip reconciliation",
-              "view_url": "http://127.0.0.1:8001/geonomia-MY/cluster/{{id}}"
             }
           }
         },

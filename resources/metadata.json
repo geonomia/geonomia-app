@@ -24,15 +24,11 @@
           "title": "Specimen Locator"
         },
         "who_was_there": {
-          "sql": "SELECT cluster_stage1_id, recordedby_first_familyname FROM cluster WHERE year BETWEEN :Year_min - 1 AND :Year_max",
+          "sql": "SELECT cluster_stage1_id, recordedby_first_familyname, year_min, year_max FROM cluster WHERE :Year BETWEEN year_min AND year_max",
           "parameters": {
-            "Year_min": {
+            "Year": {
               "type": "integer",
-              "description": "The minimum year of collection"
-            },
-            "Year_max": {
-              "type": "integer",
-              "description": "The maximum year of collection"
+              "description": "The year of collection"
             }
           },
           "description": "Query to indicate which collectors were present during a specific time period.",

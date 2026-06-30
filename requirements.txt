@@ -1,6 +1,7 @@
 datasette
 datasette-cluster-map
 datasette-reconcile
+datasette-template-sql
 pandas
 pygbif
 sqlite-utils

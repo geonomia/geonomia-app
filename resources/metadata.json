@@ -3,6 +3,42 @@
   "description": "Geonomia is a web application for exploring and analyzing biodiversity occurrence data, with a focus on collecting events and collectors. It provides tools for clustering occurrences, reconciling collector names, and visualizing data on maps.",
   "databases": {
     "geonomia": {
+      "queries": {
+        "specimen_locator": {
+          "sql": "SELECT gbifid, scientificName, eventDate, locality, recordedby, recordnumber FROM occ WHERE recordedby_first_familyname = :Collector_Surname AND recordnumber_mainnumber = :Record_Number AND year = :Year",
+          "parameters": {
+            "Collector_Surname": {
+              "type": "string",
+              "description": "The surname of the collector"
+            },
+            "Record_Number": {
+              "type": "string",
+              "description": "The record number of the specimen"
+            },
+            "Year": {
+              "type": "integer",
+              "description": "The year of collection"
+            }
+          },
+          "description": "Query to locate a specimen based on collector surname, record number, and year.",
+          "title": "Specimen Locator"
+        },
+        "who_was_there": {
+          "sql": "SELECT cluster_stage1_id, recordedby_first_familyname FROM cluster WHERE year BETWEEN :Year_min - 1 AND :Year_max",
+          "parameters": {
+            "Year_min": {
+              "type": "integer",
+              "description": "The minimum year of collection"
+            },
+            "Year_max": {
+              "type": "integer",
+              "description": "The maximum year of collection"
+            }
+          },
+          "description": "Query to indicate which collectors were present during a specific time period.",
+          "title": "Who Was There?"
+        }
+      },
       "tables": {
         "reconcile_rb_rn_yr": {
           "description": "Open Refine compatible reconciliation backend for collecting event (collector family name, year, record number)",

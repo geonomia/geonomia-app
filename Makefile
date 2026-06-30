@@ -194,6 +194,8 @@ $(DATA_DIR)/geonomia-$(GBIF_DOWNLOAD_COUNTRYCODE).db: $(VENV_SENTINEL) $(OCC_FIL
 	$(SQLITE_UTILS) create-index $@ occ cluster_stage1_id
 	$(SQLITE_UTILS) create-index $@ occ gbifid
 	$(SQLITE_UTILS) create-index $@ occ recordedby_first_familyname
+	$(SQLITE_UTILS) create-index $@ occ recordnumber_mainnumber
+	$(SQLITE_UTILS) create-index $@ occ year
 	$(SQLITE_UTILS) insert $@ reconcile_rb_rn_yr $(DATA_DIR)/rb_rn_yr.tsv --tsv --detect-types --pk=gbifid
 	$(SQLITE_UTILS) create-index $@ reconcile_rb_rn_yr reconciliation_backend_key
 	$(SQLITE_UTILS) create-index $@ reconcile_rb_rn_yr gbifid

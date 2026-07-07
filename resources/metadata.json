@@ -1,6 +1,10 @@
 {
   "title": "Geonomia",
   "description": "Geonomia is a web application for exploring and analyzing biodiversity occurrence data, with a focus on collecting events and collectors. It provides tools for clustering occurrences, reconciling collector names, and visualizing data on maps.",
+  "extra_css_urls": [
+        "https://cdn.jsdelivr.net/gh/julien040/charcoal-datasette-theme@1.0.0/theme.min.css",
+        "/assets/styles.css"
+  ],
   "databases": {
     "geonomia": {
       "queries": {

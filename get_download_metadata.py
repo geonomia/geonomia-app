@@ -16,8 +16,6 @@ if __name__ == '__main__':
     with open(args.inputfile, 'r') as f_in:
         datasette_metadata = json.load(f_in)
  
-    datasette_metadata['databases'][args.dbname] = datasette_metadata['databases'].pop('geonomia')
-
     gbif_metadata = occ.download_meta(key = args.download_id)
     license_url = gbif_metadata['license']
     if license_url in licenses:

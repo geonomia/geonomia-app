@@ -20,6 +20,8 @@ def main():
     logger.info(f"Reading input file: {args.inputfile}, looking for dataset column: {args.dataset_col_name}")
     df = pd.read_csv(args.inputfile, sep='\t', usecols=[args.dataset_col_name], dtype=DATA_SCHEMA)
     # Get unique dataset keys
+    mask  = df[args.dataset_col_name].notnull()
+    df = df[mask]
     dataset_keys = df[args.dataset_col_name].unique().tolist()
     logger.info(f"Found {len(dataset_keys)} unique dataset keys in the input file.")
     logger.info("Fetching metadata for each dataset key from GBIF registry.")

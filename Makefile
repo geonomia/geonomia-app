@@ -26,13 +26,21 @@ OCC_WITH_PROFILES_FILE := $(DATA_DIR_SHARED)/occurrences-$(GBIF_DOWNLOAD_COUNTRY
 
 echo:
 	@echo "GBIF_DOWNLOAD_COUNTRYCODE is set to: $(GBIF_DOWNLOAD_COUNTRYCODE)"
+	@echo "GBIF_DOWNLOAD_ID is set to: $(GBIF_DOWNLOAD_ID)"
 	@echo "This will be used to download and process occurrence data for the specified country code."
-	@echo "Make sure to set GBIF_DOWNLOAD_COUNTRYCODE environment variable before running the make commands."	
+	@echo "Make sure to set GBIF_DOWNLOAD_COUNTRYCODE and GBIF_DOWNLOAD_ID environment variables before running the make commands."
+	# Echo directory paths for verification
+	@echo "DOWNLOAD_DIR is set to: $(DOWNLOAD_DIR)"
+	@echo "DOWNLOAD_DIR_SHARED is set to: $(DOWNLOAD_DIR_SHARED)"
+	@echo "DATA_DIR is set to: $(DATA_DIR)"
+	@echo "DATA_DIR_SHARED is set to: $(DATA_DIR_SHARED)"
+	# echo file names for verification 	
 	@echo "OCC_FILE_ZIP is set to: $(OCC_FILE_ZIP)"
 	@echo "OCC_FILE_TSV is set to: $(OCC_FILE_TSV)"
 	@echo "OCC_CLUSTERED_FILE is set to: $(OCC_CLUSTERED_FILE)"
 	@echo "OCC_SUMMARY_FILE is set to: $(OCC_SUMMARY_FILE)"
 	@echo "OCC_SUMMARY_W_PROFILES_FILE is set to: $(OCC_SUMMARY_W_PROFILES_FILE)"
+	echo "OCC_WITH_PROFILES_FILE is set to: $(OCC_WITH_PROFILES_FILE)"
 	$(PIP) list
 
 VENV_DIR      := .venv
@@ -139,7 +147,7 @@ $(OCC_SUMMARY_W_PROFILES_FILE): $(VENV_SENTINEL) migrate_profile_rels.py $(BIONO
 
 clu2profile: $(OCC_SUMMARY_W_PROFILES_FILE)
 
-db: $(DATA_DIR)/geonomia-$(GBIF_DOWNLOAD_COUNTRYCODE).db
+db: $(DATA_DIR)/geonomia.db
 
 # OCC_FILE := $(DOWNLOAD_DIR)/occurrences-$(GBIF_DOWNLOAD_COUNTRYCODE).zip
 # CLUSTERED_STAGE1_FILE := $(DOWNLOAD_DIR)/occurrences-$(GBIF_DOWNLOAD_COUNTRYCODE)-clustered-stage1.tsv
@@ -181,7 +189,7 @@ $(DATA_DIR)/dataset_metadata.tsv: $(VENV_SENTINEL) get_dataset_metadata.py $(OCC
 	mkdir -p $(DATA_DIR)
 	$(PYTHON) get_dataset_metadata.py $(OCC_FILE_TSV) --dataset_col_name datasetkey $@
 
-$(DATA_DIR)/geonomia-$(GBIF_DOWNLOAD_COUNTRYCODE).db: $(VENV_SENTINEL) $(OCC_FILE_TSV) $(OCC_SUMMARY_W_PROFILES_FILE) $(BIONOMIA_CLAIMS_RB_FILTERED_CSV) $(BIONOMIA_PROFILES_FILTERED_CSV) $(DATA_DIR)/rb_rn_yr.tsv $(DATA_DIR)/dataset_metadata.tsv $(OCC_WITH_PROFILES_FILE)
+$(DATA_DIR)/geonomia.db: $(VENV_SENTINEL) $(OCC_FILE_TSV) $(OCC_SUMMARY_W_PROFILES_FILE) $(BIONOMIA_CLAIMS_RB_FILTERED_CSV) $(BIONOMIA_PROFILES_FILTERED_CSV) $(DATA_DIR)/rb_rn_yr.tsv $(DATA_DIR)/dataset_metadata.tsv $(OCC_WITH_PROFILES_FILE)
 	mkdir -p $(DATA_DIR)
 	$(SQLITE_UTILS) create-database $@
 	$(SQLITE_UTILS) insert $@ cluster $(OCC_SUMMARY_W_PROFILES_FILE) --tsv --detect-types --pk=cluster_stage1_id
@@ -216,8 +224,8 @@ deploy: all
 	cp -r plugins $(DATA_DIR_SHARED)/plugins
 	cp -r templates $(DATA_DIR_SHARED)/templates
 
-run: $(DATA_DIR)/geonomia-$(GBIF_DOWNLOAD_COUNTRYCODE).db data/metadata.json
-	$(DATASETTE) $(DATA_DIR)/geonomia-$(GBIF_DOWNLOAD_COUNTRYCODE).db --cors --setting sql_time_limit_ms 12000 --metadata data/metadata.json --plugins-dir plugins --templates-dir templates 
+run: db dbmetadata
+	$(DATASETTE) $(DATA_DIR)/geonomia.db --cors --setting sql_time_limit_ms 12000 --metadata data/metadata.json --plugins-dir plugins --template-dir templates 
 
 # newline := $(strip )
 

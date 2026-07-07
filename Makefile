@@ -222,10 +222,12 @@ deploy: all
 	cp data/metadata.json $(DATA_DIR_SHARED)
 	cp data/geonomia.db $(DATA_DIR_SHARED)
 	cp -r plugins $(DATA_DIR_SHARED)
+	cp -r static $(DATA_DIR_SHARED)
 	cp -r templates $(DATA_DIR_SHARED)
 
+
 run: db dbmetadata
-	$(DATASETTE) $(DATA_DIR)/geonomia.db --cors --setting sql_time_limit_ms 12000 --metadata data/metadata.json --plugins-dir plugins --template-dir templates 
+	$(DATASETTE) $(DATA_DIR)/geonomia.db --cors --setting sql_time_limit_ms 12000 --metadata data/metadata.json --plugins-dir plugins --template-dir templates --static assets:static/
 
 # newline := $(strip )
 

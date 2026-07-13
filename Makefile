@@ -192,22 +192,22 @@ $(DATA_DIR)/dataset_metadata.tsv: $(VENV_SENTINEL) get_dataset_metadata.py $(OCC
 $(DATA_DIR)/geonomia.db: $(VENV_SENTINEL) $(OCC_FILE_TSV) $(OCC_SUMMARY_W_PROFILES_FILE) $(BIONOMIA_CLAIMS_RB_FILTERED_CSV) $(BIONOMIA_PROFILES_FILTERED_CSV) $(DATA_DIR)/rb_rn_yr.tsv $(DATA_DIR)/dataset_metadata.tsv $(OCC_WITH_PROFILES_FILE)
 	mkdir -p $(DATA_DIR)
 	$(SQLITE_UTILS) create-database $@
-	$(SQLITE_UTILS) insert $@ cluster $(OCC_SUMMARY_W_PROFILES_FILE) --tsv --detect-types --pk=cluster_stage1_id
-	$(SQLITE_UTILS) insert $@ occ $(OCC_WITH_PROFILES_FILE) --tsv --detect-types
+	$(SQLITE_UTILS) insert $@ cluster $(OCC_SUMMARY_W_PROFILES_FILE) --tsv  --pk=cluster_stage1_id
+	$(SQLITE_UTILS) insert $@ occ $(OCC_WITH_PROFILES_FILE) --tsv 
 	$(SQLITE_UTILS) transform $@ occ --add-foreign-key cluster_stage1_id cluster cluster_stage1_id
 	$(SQLITE_UTILS) enable-fts $@ occ locality recordedBy
 	$(SQLITE_UTILS) enable-fts $@ cluster habitat itinerary collecting_areas
-	$(SQLITE_UTILS) insert $@ profile $(BIONOMIA_PROFILES_FILTERED_CSV) --tsv --detect-types  --pk=Object
+	$(SQLITE_UTILS) insert $@ profile $(BIONOMIA_PROFILES_FILTERED_CSV) --tsv   --pk=Object
 	$(SQLITE_UTILS) transform $@ cluster --add-foreign-key profile_Object profile Object
 	$(SQLITE_UTILS) create-index $@ occ cluster_stage1_id
 	$(SQLITE_UTILS) create-index $@ occ gbifid
 	$(SQLITE_UTILS) create-index $@ occ recordedby_first_familyname
 	$(SQLITE_UTILS) create-index $@ occ recordnumber_mainnumber
 	$(SQLITE_UTILS) create-index $@ occ year
-	$(SQLITE_UTILS) insert $@ reconcile_rb_rn_yr $(DATA_DIR)/rb_rn_yr.tsv --tsv --detect-types --pk=gbifid
+	$(SQLITE_UTILS) insert $@ reconcile_rb_rn_yr $(DATA_DIR)/rb_rn_yr.tsv --tsv --pk=gbifid
 	$(SQLITE_UTILS) create-index $@ reconcile_rb_rn_yr reconciliation_backend_key
 	$(SQLITE_UTILS) create-index $@ reconcile_rb_rn_yr gbifid
-	$(SQLITE_UTILS) insert $@ dataset $(DATA_DIR)/dataset_metadata.tsv --tsv --detect-types --pk=datasetkey
+	$(SQLITE_UTILS) insert $@ dataset $(DATA_DIR)/dataset_metadata.tsv --tsv --pk=datasetkey
 	$(SQLITE_UTILS) transform $@ occ --add-foreign-key datasetkey dataset datasetkey
 
 data/metadata.json: $(VENV_SENTINEL) get_download_metadata.py resources/metadata.json 
